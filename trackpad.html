@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Trackpad Pro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+
+  :root {
+    /* Premium Dark Theme */
+    --bg-deepest: #0a0e14;
+    --bg-deep: #0f1419;
+    --bg-base: #131820;
+    --bg-raised: #171d26;
+    
+    /* Glass Colors */
+    --glass-light: rgba(30, 40, 55, 0.4);
+    --glass-medium: rgba(20, 28, 40, 0.6);
+    --glass-strong: rgba(15, 20, 30, 0.8);
+    
+    /* Accent Colors */
+    --primary: #00d9ff;
+    --primary-dark: #00a8cc;
+    --accent-cyan: #00f5e6;
+    --accent-blue: #0099ff;
+    
+    /* Status Colors */
+    --success: #00f5a0;
+    --error: #ff4466;
+    --warning: #ffaa00;
+    
+    /* Text Colors */
+    --text-primary: #f5f7fa;
+    --text-secondary: #a8b2bf;
+    --text-tertiary: #6b7381;
+    
+    /* Border & Shadows */
+    --border-light: rgba(0, 217, 255, 0.1);
+    --border-medium: rgba(0, 217, 255, 0.2);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+    background: 
+      radial-gradient(ellipse 1200px 700px at 50% 0%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 800px 600px at 0% 100%, rgba(0, 153, 255, 0.06) 0%, transparent 60%),
+      linear-gradient(135deg, var(--bg-deepest) 0%, var(--bg-deep) 40%, var(--bg-base) 100%);
+    background-attachment: fixed;
+  }
+
+  /* ===== PREMIUM GLASSMORPHISM MIXIN ===== */
+  .glass-panel {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glass-panel-strong {
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glass-btn {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .glass-btn:hover {
+    background: var(--glass-medium);
+    border-color: var(--border-medium);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md), 0 0 20px rgba(0, 217, 255, 0.15);
+  }
+
+  .glass-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm), 0 0 10px rgba(0, 217, 255, 0.1);
+  }
+
+  /* ===== LAYOUT ===== */
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #statusbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--glass-strong);
+    border-bottom: 1px solid var(--border-light);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    gap: 12px;
+    font-size: 12px;
+    z-index: 100;
+  }
+
+  .status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #conn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--error);
+    box-shadow: 0 0 8px rgba(255, 68, 102, 0.6);
+    animation: pulse-error 2s infinite;
+  }
+
+  #conn-dot.connected {
+    background: var(--success);
+    box-shadow: 0 0 10px rgba(0, 245, 160, 0.7);
+    animation: pulse-success 2s infinite;
+  }
+
+  @keyframes pulse-success {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes pulse-error {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  #tabbar {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: var(--glass-panel);
+    border-bottom: 1px solid var(--border-light);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+  }
+
+  .tab {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 10px 8px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .tab:hover {
+    color: var(--text-primary);
+    background: rgba(0, 217, 255, 0.08);
+  }
+
+  .tab.active {
+    color: var(--primary);
+    background: var(--glass-light);
+    border-color: var(--border-medium);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+  }
+
+  #panels {
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .panel {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    scroll-behavior: smooth;
+  }
+
+  .panel.active { 
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Smooth scrollbar */
+  .panel::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .panel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .panel::-webkit-scrollbar-thumb {
+    background: rgba(0, 217, 255, 0.2);
+    border-radius: 3px;
+  }
+
+  .panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 217, 255, 0.4);
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  /* ===== BUTTONS ===== */
+  .chip-btn {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .btn {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 10px;
+    padding: 12px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .btn.primary {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.25), rgba(0, 153, 255, 0.15));
+    border-color: var(--primary);
+  }
+
+  .btn.primary:hover {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.35), rgba(0, 153, 255, 0.25));
+    box-shadow: var(--shadow-md), 0 0 20px rgba(0, 217, 255, 0.25);
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  /* ===== PREMIUM KEYBOARD ===== */
+  .keyboard-shell {
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 12px;
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 7px;
+    aspect-ratio: auto;
+  }
+
+  .kb-row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 7px;
+  }
+
+  .key {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 9px;
+    padding: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .key::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .key:hover::before {
+    opacity: 1;
+  }
+
+  .key:hover {
+    box-shadow: var(--shadow-md), 0 0 12px rgba(0, 217, 255, 0.2);
+  }
+
+  .key:active {
+    transform: scale(0.95);
+  }
+
+  .key.wide2 { grid-column: span 2; }
+  .key.wide3 { grid-column: span 3; }
+  .key.wide4 { grid-column: span 4; }
+  .key.mod-active { 
+    background: var(--glass-medium);
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+  }
+
+  /* ===== TRACKPAD AREA ===== */
+  #trackpad {
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    flex: 1 1 auto;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+    overflow: hidden;
+    background: var(--glass-strong);
+    box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  #trackpad::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(0, 217, 255, 0.05), transparent 70%);
+    pointer-events: none;
+  }
+
+  #trackpad.scrolling {
+    border-color: var(--primary);
+    box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 217, 255, 0.2);
+  }
+
+  #trackpad-hint {
+    text-align: center;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .touch-dot {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: radialgradient(circle, rgba(0, 217, 255, 0.2), transparent);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
+    z-index: 2;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  input[type='text'],
+  input[type='password'],
+  input[type='range'],
+  textarea,
+  select {
+    background: var(--glass-strong);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  input[type='text'],
+  input[type='password'],
+  textarea,
+  select {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  input[type='text']:focus,
+  input[type='password']:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+  }
+
+  input[type='range'] {
+    accent-color: var(--primary);
+    height: 5px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    font-family: inherit;
+  }
+
+  .pill {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .pill:hover {
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
+  }
+
+  .combo-grid, .shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .shortcut-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
+
+  .media-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  /* ===== MODALS ===== */
+  #auth-overlay,
+  #qr-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(10, 14, 20, 0.88);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  #auth-overlay.show,
+  #qr-overlay.show { 
+    display: flex; 
+  }
+
+  .auth-card {
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    width: min(420px, 96vw);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .auth-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+
+  .auth-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  #auth-pin {
+    flex: 1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  #qr-img { 
+    width: 220px; 
+    height: 220px; 
+    background: white; 
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  #qr-help { 
+    max-width: 420px; 
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  /* ===== QUICK DECK (FIXED BOTTOM) - REDESIGNED ===== */
+  #quick-deck {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 80;
+    background: var(--glass-medium);
+    border: 1px solid var(--border-medium);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: var(--shadow-lg);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  #quick-deck.collapsed .deck-body { 
+    display: none; 
+  }
+
+  .deck-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  #quick-deck.collapsed .deck-head { 
+    margin-bottom: 0; 
+  }
+
+  .deck-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .deck-row:last-child { 
+    margin-bottom: 0; 
+  }
+
+  .deck-input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  #deck-text {
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .deck-key-btn {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 9px;
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (orientation: landscape) {
+    #panels { 
+      padding-bottom: 12px; 
+    }
+
+    #quick-deck {
+      left: auto;
+      right: 12px;
+      width: min(48vw, 540px);
+    }
+
+    .keyboard-shell {
+      grid-template-columns: repeat(10, 1fr);
+    }
+  }
+
+  @media (max-height: 700px) {
+    #quick-deck {
+      max-height: 60vh;
+    }
+
+    .key {
+      font-size: 12px;
+      min-height: 36px;
+    }
+  }
+
+  /* ===== UTILITY ===== */
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .row label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .small {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .toggle {
+    width: 50px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .toggle::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .toggle.on {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.3), rgba(0, 153, 255, 0.2));
+    border-color: var(--primary);
+  }
+
+  .toggle.on::after {
+    transform: translateX(22px);
+  }
+
+  /* ===== CARDS & LISTS ===== */
+  .profile-item,
+  .macro-card,
+  .share-item,
+  .nearby-item {
+    background: var(--glass-light);
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .profile-item.active,
+  .macro-card.active,
+  .share-item.active,
+  .nearby-item.active {
+    background: var(--glass-medium);
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.15);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section {
+    animation: fadeIn 0.3s ease-out;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="statusbar">
+    <div class="status-left">
+      <span id="conn-dot"></span>
+      <span id="conn-text">Connecting...</span>
+      <span id="latency" class="small"></span>
+    </div>
+    <div class="status-right">
+      <button class="chip-btn" id="desktop-chip">Desktop: Auto</button>
+      <button class="chip-btn" onclick="showQR()">QR</button>
+    </div>
+  </div>
+
+  <div id="tabbar">
+    <div class="tab active" onclick="switchTab('trackpad', this)">Trackpad</div>
+    <div class="tab" onclick="switchTab('keyboard', this)">Keyboard</div>
+    <div class="tab" onclick="switchTab('media', this)">Media</div>
+    <div class="tab" onclick="switchTab('share', this)">Share</div>
+    <div class="tab" onclick="switchTab('shortcuts', this)">Shortcuts</div>
+  </div>
+
+  <div id="panels">
+    <div id="panel-trackpad" class="panel active">
+      <div id="trackpad">
+        <div id="trackpad-hint">1 finger move and tap\n2 fingers scroll\n3 fingers drag hold</div>
+      </div>
+
+      <div class="grid-4">
+        <div class="btn primary" onclick="clickMouse('left')">Left</div>
+        <div class="btn" onclick="clickMouse('right')">Right</div>
+        <div class="btn" onclick="send({type:'double_click'}); haptic()">Double</div>
+        <div class="btn" onclick="send({type:'middle_click'}); haptic()">Middle</div>
+      </div>
+
+      <div class="section">
+        <h3>Pointer</h3>
+        <div class="row">
+          <label>Speed</label>
+          <input type="range" min="1" max="24" value="10" id="s-speed" oninput="settings.speed=+this.value; setText('v-speed', this.value)">
+          <span class="value" id="v-speed">10</span>
+        </div>
+        <div class="row">
+          <label>Scroll</label>
+          <input type="range" min="1" max="16" value="6" id="s-scroll" oninput="settings.scrollSpeed=+this.value; setText('v-scroll', this.value)">
+          <span class="value" id="v-scroll">6</span>
+        </div>
+        <div class="row">
+          <label>Acceleration</label>
+          <div class="toggle on" id="t-accel" onclick="toggleSetting('accel', this)"></div>
+        </div>
+        <div class="row">
+          <label>Tap to click</label>
+          <div class="toggle on" id="t-tap" onclick="toggleSetting('tapClick', this)"></div>
+        </div>
+        <div class="row">
+          <label>Haptic</label>
+          <div class="toggle on" id="t-haptic" onclick="toggleSetting('haptic', this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-keyboard" class="panel">
+      <div class="keyboard-shell">
+        <div class="kb-row">
+          <div class="key" onclick="pressKey('q')">Q</div><div class="key" onclick="pressKey('w')">W</div><div class="key" onclick="pressKey('e')">E</div><div class="key" onclick="pressKey('r')">R</div><div class="key" onclick="pressKey('t')">T</div><div class="key" onclick="pressKey('y')">Y</div><div class="key" onclick="pressKey('u')">U</div><div class="key" onclick="pressKey('i')">I</div><div class="key" onclick="pressKey('o')">O</div><div class="key" onclick="pressKey('p')">P</div>
+        </div>
+        <div class="kb-row">
+          <div class="key" onclick="pressKey('a')">A</div><div class="key" onclick="pressKey('s')">S</div><div class="key" onclick="pressKey('d')">D</div><div class="key" onclick="pressKey('f')">F</div><div class="key" onclick="pressKey('g')">G</div><div class="key" onclick="pressKey('h')">H</div><div class="key" onclick="pressKey('j')">J</div><div class="key" onclick="pressKey('k')">K</div><div class="key" onclick="pressKey('l')">L</div><div class="key" onclick="pressKey('backspace')">Del</div>
+        </div>
+        <div class="kb-row">
+          <div class="key wide2" id="mod-shift" onclick="toggleMod('shift', this)">Shift</div><div class="key" onclick="pressKey('z')">Z</div><div class="key" onclick="pressKey('x')">X</div><div class="key" onclick="pressKey('c')">C</div><div class="key" onclick="pressKey('v')">V</div><div class="key" onclick="pressKey('b')">B</div><div class="key" onclick="pressKey('n')">N</div><div class="key" onclick="pressKey('m')">M</div><div class="key wide2" onclick="pressKey('enter')">Enter</div>
+        </div>
+        <div class="kb-row">
+          <div class="key wide2" id="mod-ctrl" onclick="toggleMod('ctrl', this)">Ctrl</div><div class="key wide2" id="mod-alt" onclick="toggleMod('alt', this)">Alt</div><div class="key wide4" onclick="pressKey('space')">Space</div><div class="key" onclick="pressKey('tab')">Tab</div><div class="key" onclick="pressKey('escape')">Esc</div>
+        </div>
+        <div class="kb-row">
+          <div class="key" onclick="pressKey('left')">Left</div><div class="key" onclick="pressKey('up')">Up</div><div class="key" onclick="pressKey('down')">Down</div><div class="key" onclick="pressKey('right')">Right</div><div class="key" onclick="pressHotkey(['ctrl','c'])">Copy</div><div class="key" onclick="pressHotkey(['ctrl','v'])">Paste</div><div class="key" onclick="pressHotkey(['ctrl','z'])">Undo</div><div class="key" onclick="pressHotkey(['ctrl','shift','t'])">Reopen</div><div class="key" onclick="pressHotkey(['ctrl','tab'])">NextTab</div><div class="key" onclick="pressHotkey(['ctrl','shift','tab'])">PrevTab</div>
+        </div>
+      </div>
+
+      <div class="section" id="keyboard-combos">
+        <h3>Quick Combos</h3>
+        <div class="combo-grid">
+          <div class="pill" onclick="pressHotkey(['ctrl','a'])">Select all</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','s'])">Save</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','f'])">Find</div>
+          <div class="pill" onclick="pressHotkey(['alt','tab'])">App switch</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','l'])">Address bar</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','w'])">Close tab</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-media" class="panel">
+      <div class="section">
+        <h3>Media</h3>
+        <div class="media-grid">
+          <div class="pill" onclick="send({type:'media',cmd:'prev'}); haptic()">Prev</div>
+          <div class="pill" onclick="send({type:'media',cmd:'play_pause'}); haptic()">Play/Pause</div>
+          <div class="pill" onclick="send({type:'media',cmd:'next'}); haptic()">Next</div>
+          <div class="pill" onclick="send({type:'media',cmd:'vol_down'}); haptic()">Vol -</div>
+          <div class="pill" onclick="send({type:'media',cmd:'vol_up'}); haptic()">Vol +</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Spotify</h3>
+        <div class="shortcut-grid">
+          <div class="pill secondary" onclick="launchApp('spotify')">Open Spotify App</div>
+          <div class="pill" onclick="send({type:'media',cmd:'play_pause'}); haptic()">Play/Pause</div>
+          <div class="pill" onclick="send({type:'media',cmd:'next'}); haptic()">Next Track</div>
+          <div class="pill" onclick="send({type:'media',cmd:'mute'}); haptic()">Mute</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-share" class="panel">
+      <div class="section">
+        <h3>Send to Desktop</h3>
+        <div class="small" style="margin-bottom:10px;">Pick files or images on the phone, send text to the desktop clipboard, or save into a target folder.</div>
+        <div class="share-targets" id="share-targets">
+          <div class="share-target active" data-target="shared" onclick="selectShareTarget('shared', this)">Shared folder</div>
+          <div class="share-target" data-target="downloads" onclick="selectShareTarget('downloads', this)">Downloads</div>
+          <div class="share-target" data-target="desktop" onclick="selectShareTarget('desktop', this)">Desktop</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Files and Images</h3>
+        <div class="share-dropzone">
+          <div>Choose one or more files. Images are saved the same way and can optionally open on the desktop.</div>
+          <input id="share-files" type="file" multiple onchange="sendShareFiles(this.files)">
+          <div class="row" style="margin-top:10px; justify-content:center;">
+            <button class="chip-btn" onclick="document.getElementById('share-files').click()">Pick files</button>
+            <button class="chip-btn" onclick="sendShareFiles(document.getElementById('share-files').files, true)">Send selected</button>
+          </div>
+          <div class="row" style="margin-top:6px; justify-content:center;">
+            <label style="width:auto;">Open after save</label>
+            <div class="toggle on" id="t-open-after" onclick="toggleShareOpenAfter(this)"></div>
+          </div>
+          <div class="row" style="margin-top:6px; justify-content:center;">
+            <label style="width:auto;">Copy images to clipboard</label>
+            <div class="toggle" id="t-copy-image" onclick="toggleShareCopyImage(this)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Clipboard Text</h3>
+        <textarea id="share-text" class="share-textarea" placeholder="Type text here and send it to the desktop clipboard."></textarea>
+        <div class="row" style="justify-content:flex-end; margin-top:8px;">
+          <button class="chip-btn" onclick="sendShareText()">Send text</button>
+        </div>
+        <div class="small" id="share-text-status">Text will be copied to the desktop clipboard.</div>
+      </div>
+
+      <div class="section">
+        <h3>Recent Shares</h3>
+        <div id="share-recent"></div>
+      </div>
+    </div>
+
+    <div id="panel-shortcuts" class="panel">
+      <div class="section">
+        <h3>System</h3>
+        <div class="shortcut-grid">
+          <div class="pill" onclick="send({type:'system',cmd:'lock'})">Lock</div>
+          <div class="pill" onclick="send({type:'system',cmd:'screenshot'})">Screenshot</div>
+          <div class="pill" onclick="send({type:'system',cmd:'show_desktop'})">Desktop</div>
+          <div class="pill" onclick="send({type:'window',cmd:'close'})">Close window</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Quick Tabs</h3>
+        <div class="shortcut-grid">
+          <div class="pill" onclick="pressHotkey(['ctrl','t'])">New tab</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','w'])">Close tab</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','tab'])">Next tab</div>
+          <div class="pill" onclick="pressHotkey(['ctrl','shift','tab'])">Prev tab</div>
+          <div class="pill" onclick="pressHotkey(['alt','left'])">Back</div>
+          <div class="pill" onclick="pressHotkey(['alt','right'])">Forward</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Quick Launch</h3>
+        <div class="row" style="justify-content:flex-end; margin-bottom:8px;">
+          <button class="chip-btn" onclick="registerCurrentForegroundApp()">Save Current App</button>
+        </div>
+        <div class="shortcut-grid" id="app-launch-grid"></div>
+        <div id="app-launch-status" class="small" style="margin-top:8px;">Tap an app to launch on desktop.</div>
+      </div>
+
+      <div class="section">
+        <h3>Macros</h3>
+        <div class="macro-builder">
+          <input id="macro-name" placeholder="Macro name (for example: Night Mode)">
+          <input id="macro-prompt" placeholder="AI prompt (for example: open vscode, chrome and mute media)">
+          <textarea id="macro-steps-json" placeholder='Macro steps JSON: [{"type":"app","id":"vscode"}]'></textarea>
+          <div class="macro-builder-actions">
+            <button class="chip-btn" onclick="generateMacroAI()">AI Generate</button>
+            <button class="chip-btn" onclick="clearMacroEditor()">Clear</button>
+            <button class="chip-btn" onclick="saveMacroFromEditor()">Save Macro</button>
+          </div>
+        </div>
+        <div class="small" id="macro-recommendations" style="margin-bottom:8px;">Recommendations will appear here based on usage.</div>
+        <div class="shortcut-grid" id="macro-grid"></div>
+        <div id="macro-status" class="small" style="margin-top:8px;">Tap a macro to run an action sequence.</div>
+      </div>
+
+      <div class="section">
+        <h3>Share Links</h3>
+        <div class="small">Generate a link to send to friends. They click the link, download a script, and their laptop becomes available to control.</div>
+        <div class="row" style="margin-top:10px;">
+          <label style="width:auto;">Friend's name</label>
+          <input id="shareLinkFriendName" style="flex:1;background:#0e1a27;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px;" placeholder="John's Laptop">
+        </div>
+        <div class="row" style="justify-content:flex-end; margin-top:8px;">
+          <button class="chip-btn primary" onclick="generateShareLink()">Generate Link</button>
+        </div>
+        <div id="share-link-result" class="small" style="margin-top:8px; display:none;">
+          <div style="background:rgba(89,216,191,0.12); padding:10px; border-radius:8px; margin-bottom:8px;">
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:6px;">✅ Link ready to share:</div>
+            <div id="share-link-text" style="word-break:break-all; font-size:11px; color:var(--text); margin-bottom:8px;"></div>
+            <div class="row" style="justify-content:space-between; margin:0;">
+              <button class="chip-btn" onclick="copyShareLink()">📋 Copy Link</button>
+              <button class="chip-btn" onclick="shareViaWhatsApp()">📱 WhatsApp</button>
+            </div>
+          </div>
+        </div>
+        <div id="share-link-status" class="small" style="margin-top:6px; color:var(--muted);">Generating link...</div>
+      </div>
+
+      <div class="section">
+        <h3>Desktop Profiles</h3>
+        <div class="small">Use multiple desktops on the same network by adding each desktop websocket URL.</div>
+        <div class="nearby-actions">
+          <button class="chip-btn" onclick="scanNearbyDesktops()">Scan nearby desktops</button>
+          <span class="small" id="nearby-status">Tap scan to discover laptops on the same Wi-Fi.</span>
+        </div>
+        <div class="invite-compose">
+          <textarea id="invite-message" placeholder="Custom invite message, for example: Hey, can I connect to your laptop for a quick demo?"></textarea>
+          <div class="row" style="justify-content:flex-end;">
+            <button class="chip-btn" onclick="fillInviteMessage('Quick connect request')">Use default message</button>
+          </div>
+        </div>
+        <div class="manual-add">
+          <input id="manual-desktop-ip" placeholder="Add desktop by IP, example: 192.168.11.24">
+          <button class="chip-btn" onclick="addManualDesktop()">Add by IP</button>
+        </div>
+        <div id="nearby-list"></div>
+        <div class="profile-actions">
+          <button class="chip-btn" onclick="registerCurrentDesktop()">Register current desktop</button>
+          <button class="chip-btn" onclick="refreshDesktopInvite()">Refresh invite</button>
+        </div>
+        <div class="invite-row">
+          <input id="invite-code" placeholder="Paste desktop invite code here">
+          <button class="chip-btn" onclick="importDesktopInvite()">Import invite</button>
+        </div>
+        <div class="small" id="invite-status" style="margin-top:6px;">Register a desktop once, then switch to it later from the list.</div>
+        <div class="row" style="margin-top:8px;">
+          <label>Name</label>
+          <input id="profile-name" style="flex:1;background:#0e1a27;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px;" placeholder="Office PC">
+        </div>
+        <div class="row">
+          <label>WS URL</label>
+          <input id="profile-url" style="flex:1;background:#0e1a27;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px;" placeholder="ws://192.168.1.21:8000/ws">
+        </div>
+        <div class="row" style="justify-content:flex-end;">
+          <button class="chip-btn" onclick="addProfile()">Add profile</button>
+        </div>
+        <div id="profile-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="quick-deck">
+    <div class="deck-head">
+      <span>Quick Control Deck</span>
+      <button class="chip-btn" id="deck-toggle" onclick="toggleDeck()">Hide</button>
+    </div>
+    <div class="deck-body">
+      <div class="deck-row">
+        <div class="deck-key-btn" onclick="clickMouse('left')">Left</div>
+        <div class="deck-key-btn" onclick="clickMouse('right')">Right</div>
+        <div class="deck-key-btn" onclick="send({type:'double_click'}); haptic()">Double</div>
+        <div class="deck-key-btn" onclick="send({type:'middle_click'}); haptic()">Middle</div>
+      </div>
+      <div class="deck-input-row">
+        <input id="deck-text" placeholder="Type and press Send or Enter" onkeydown="if(event.key==='Enter'){sendDeckText();}">
+        <button class="chip-btn" onclick="sendDeckText()">Send</button>
+      </div>
+      <div class="deck-row" style="margin-top:6px;">
+        <div class="deck-key-btn" onclick="pressKey('backspace')">Backspace</div>
+        <div class="deck-key-btn" onclick="pressKey('enter')">Enter</div>
+        <div class="deck-key-btn" onclick="pressKey('space')">Space</div>
+        <div class="deck-key-btn" onclick="pressKey('tab')">Tab</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="qr-overlay">
+  <img id="qr-img" alt="QR code">
+  <div id="qr-url" class="small">Loading...</div>
+  <div id="qr-help" class="small">Use this QR to open the same controller URL on another phone quickly.</div>
+  <button class="chip-btn" onclick="closeQR()">Close</button>
+</div>
+
+<div id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-title">Desktop PIN Required</div>
+    <div class="auth-sub">Enter the PIN configured in TRACKPAD_PIN on the desktop server.</div>
+    <div class="auth-row">
+      <input id="auth-pin" type="password" placeholder="Enter PIN">
+      <button class="chip-btn" onclick="submitPin()">Unlock</button>
+    </div>
+    <div id="auth-status" class="small" style="margin-top:10px;">Not authenticated.</div>
+  </div>
+</div>
+
+<script>
+const settings = { speed: 10, scrollSpeed: 6, accel: true, tapClick: true, haptic: true };
+const mods = { shift: false, ctrl: false, alt: false };
+
+// Cloud relay configuration
+const RELAY_URL = 'https://trackpad-relay.vercel.app'; // Update this to your Vercel deployment URL
+let currentShareLinkId = null;
+let currentShareDeviceId = null;
+
+let ws = null;
+let pingTimer = null;
+let reconnectTimer = null;
+let lastPingSent = 0;
+let currentWsUrl = getDefaultWsUrl();
+let authRequired = false;
+let appList = [];
+let macroList = [];
+let editingMacroId = '';
+let shareState = {
+  target: 'shared',
+  openAfter: true,
+  copyImage: false,
+  recent: []
+};
+
+let desktopInviteState = {
+  current: null
+};
+
+let nearbyDesktopState = {
+  items: []
+};
+
+let profileState = {
+  activeId: 'auto',
+  list: []
+};
+
+let pointer = {
+  active: false,
+  id: null,
+  startX: 0,
+  startY: 0,
+  lastX: 0,
+  lastY: 0,
+  startAt: 0,
+  moved: false,
+  movePx: 0,
+  raf: 0,
+  accDx: 0,
+  accDy: 0
+};
+
+let scrollState = {
+  t0: null,
+  t1: null
+};
+
+let dragMode = false;
+
+function getDefaultWsUrl() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${location.host}/ws`;
+}
+
+function connect() {
+  clearTimeout(reconnectTimer);
+  try {
+    ws = new WebSocket(currentWsUrl);
+  } catch {
+    scheduleReconnect();
+    return;
+  }
+
+  ws.onopen = () => {
+    setConn(true);
+    if (pingTimer) clearInterval(pingTimer);
+    pingTimer = setInterval(ping, 2000);
+    setText('desktop-chip', profileState.activeId === 'auto' ? 'Desktop: Auto' : `Desktop: ${getActiveProfileName()}`);
+  };
+
+  ws.onmessage = ev => {
+    try {
+      const data = JSON.parse(ev.data);
+      if (data.type === 'pong') {
+        setText('latency', `${Date.now() - lastPingSent}ms`);
+      } else if (data.type === 'auth_required') {
+        showAuthOverlay('Authentication required. Enter PIN to control desktop.');
+      } else if (data.type === 'auth_result') {
+        if (data.ok) {
+          hideAuthOverlay();
+          setText('auth-status', 'Authenticated.');
+        } else {
+          showAuthOverlay('Wrong PIN. Try again.');
+        }
+      } else if (data.type === 'app_result') {
+        const label = String(data.id || '').trim() || 'App';
+        if (data.ok) setText('app-launch-status', `${label} launch request sent.`);
+        else setText('app-launch-status', `${label} is not available on this desktop.`);
+      } else if (data.type === 'register_app_result') {
+        if (data.ok) {
+          const status = data.already ? `${data.name} already exists in Quick Launch.` : `${data.name} added to Quick Launch.`;
+          setText('app-launch-status', status);
+          loadApps();
+        } else {
+          setText('app-launch-status', 'Could not detect current app. Bring the target app to foreground and retry.');
+        }
+      } else if (data.type === 'macro_result') {
+        const label = String(data.id || '').trim() || 'Macro';
+        if (data.ok) {
+          setText('macro-status', `${label} macro executed.`);
+          loadMacros();
+        }
+        else setText('macro-status', `${label} macro failed or missing.`);
+      }
+    } catch {}
+  };
+
+  ws.onclose = () => {
+    setConn(false);
+    if (pingTimer) clearInterval(pingTimer);
+    scheduleReconnect();
+  };
+
+  ws.onerror = () => {
+    setConn(false);
+  };
+}
+
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(connect, 1500);
+}
+
+function send(payload) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+  }
+}
+
+function ping() {
+  lastPingSent = Date.now();
+  send({ type: 'ping' });
+}
+
+function setConn(connected) {
+  document.getElementById('conn-dot').classList.toggle('connected', connected);
+  setText('conn-text', connected ? 'Connected' : 'Reconnecting...');
+}
+
+function showAuthOverlay(msg) {
+  const overlay = document.getElementById('auth-overlay');
+  overlay.classList.add('show');
+  if (msg) setText('auth-status', msg);
+}
+
+function hideAuthOverlay() {
+  document.getElementById('auth-overlay').classList.remove('show');
+}
+
+function submitPin() {
+  const pinInput = document.getElementById('auth-pin');
+  const pin = pinInput.value;
+  if (!pin) {
+    setText('auth-status', 'PIN is required.');
+    return;
+  }
+  send({ type: 'auth', pin });
+}
+
+function haptic(ms = 16) {
+  if (settings.haptic && navigator.vibrate) navigator.vibrate(ms);
+}
+
+function setText(id, value) {
+  document.getElementById(id).textContent = value;
+}
+
+function switchTab(name, tabEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  tabEl.classList.add('active');
+}
+
+function toggleSetting(key, el) {
+  settings[key] = !settings[key];
+  el.classList.toggle('on', settings[key]);
+}
+
+function clickMouse(button) {
+  if (button === 'left') send({ type: 'left_click' });
+  if (button === 'right') send({ type: 'right_click' });
+  haptic();
+}
+
+function toggleMod(mod, el) {
+  mods[mod] = !mods[mod];
+  el.classList.toggle('mod-active', mods[mod]);
+}
+
+function consumeMods() {
+  const active = Object.keys(mods).filter(k => mods[k]);
+  active.forEach(mod => {
+    mods[mod] = false;
+    const el = document.getElementById(`mod-${mod}`);
+    if (el) el.classList.remove('mod-active');
+  });
+  return active;
+}
+
+function pressKey(key) {
+  const activeMods = consumeMods();
+  if (activeMods.length > 0) send({ type: 'hotkey', keys: [...activeMods, key] });
+  else send({ type: 'key', key });
+  haptic();
+}
+
+function pressHotkey(keys) {
+  send({ type: 'hotkey', keys });
+  haptic();
+}
+
+function launchApp(appId) {
+  send({ type: 'app', id: appId });
+  setText('app-launch-status', `Launching ${appId}...`);
+  haptic();
+}
+
+function runMacro(macroId) {
+  send({ type: 'macro', id: macroId });
+  setText('macro-status', `Running ${macroId}...`);
+  haptic();
+}
+
+function selectShareTarget(target, el) {
+  shareState.target = target;
+  document.querySelectorAll('.share-target').forEach(node => node.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleShareOpenAfter(el) {
+  shareState.openAfter = !shareState.openAfter;
+  el.classList.toggle('on', shareState.openAfter);
+}
+
+function toggleShareCopyImage(el) {
+  shareState.copyImage = !shareState.copyImage;
+  el.classList.toggle('on', shareState.copyImage);
+}
+
+async function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('read_failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendShareFiles(fileList, fromButton = false) {
+  const files = Array.from(fileList || []);
+  if (!files.length) {
+    setText('share-text-status', fromButton ? 'Choose files first.' : 'No files selected.');
+    return;
+  }
+
+  setText('share-text-status', `Sending ${files.length} item(s)...`);
+  for (const file of files) {
+    try {
+      const data = await fileToDataUrl(file);
+      const res = await fetch('/share/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          data,
+          target: shareState.target,
+          openAfter: shareState.openAfter,
+          copyToClipboard: shareState.copyImage
+        })
+      });
+      const out = await res.json();
+      if (!out.ok) throw new Error(out.reason || 'share_failed');
+    } catch {
+      setText('share-text-status', `Failed to send ${file.name}.`);
+      return;
+    }
+  }
+
+  setText('share-text-status', `${files.length} item(s) sent to desktop.`);
+  document.getElementById('share-files').value = '';
+  await loadShareRecent();
+  haptic();
+}
+
+async function sendShareText() {
+  const input = document.getElementById('share-text');
+  const text = input.value.trim();
+  if (!text) {
+    setText('share-text-status', 'Enter text to send.');
+    return;
+  }
+  try {
+    const res = await fetch('/share/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, name: 'Clipboard text' })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.reason || 'clipboard_failed');
+    input.value = '';
+    setText('share-text-status', 'Text copied to desktop clipboard.');
+    await loadShareRecent();
+    haptic();
+  } catch {
+    setText('share-text-status', 'Could not copy text to the desktop clipboard.');
+  }
+}
+
+async function openSharePath(path) {
+  try {
+    await fetch('/share/open', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path })
+    });
+  } catch {}
+}
+
+function renderShareRecent() {
+  const root = document.getElementById('share-recent');
+  root.innerHTML = '';
+  if (!shareState.recent.length) {
+    root.innerHTML = '<div class="small">No recent shares yet.</div>';
+    return;
+  }
+
+  shareState.recent.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'share-item';
+
+    const head = document.createElement('div');
+    head.className = 'share-item-head';
+    const label = document.createElement('div');
+    label.textContent = item.name || item.preview || item.path || 'Shared item';
+    const meta = document.createElement('div');
+    meta.className = 'small';
+    meta.textContent = item.kind === 'text' ? 'Clipboard' : (item.target || 'shared');
+    head.appendChild(label);
+    head.appendChild(meta);
+    card.appendChild(head);
+
+    if (item.preview) {
+      const preview = document.createElement('div');
+      preview.className = 'small';
+      preview.textContent = item.preview;
+      card.appendChild(preview);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'share-item-actions';
+
+    if (item.path) {
+      const openBtn = document.createElement('button');
+      openBtn.className = 'chip-btn';
+      openBtn.textContent = 'Open';
+      openBtn.onclick = () => openSharePath(item.path);
+      actions.appendChild(openBtn);
+    }
+
+    card.appendChild(actions);
+    root.appendChild(card);
+  });
+}
+
+async function loadShareRecent() {
+  try {
+    const res = await fetch('/share/recent');
+    const data = await res.json();
+    shareState.recent = Array.isArray(data.items) ? data.items : [];
+  } catch {
+    shareState.recent = [];
+  }
+  renderShareRecent();
+}
+
+function clearMacroEditor() {
+  editingMacroId = '';
+  document.getElementById('macro-name').value = '';
+  document.getElementById('macro-prompt').value = '';
+  document.getElementById('macro-steps-json').value = '';
+}
+
+function prettyTimeAgo(iso) {
+  if (!iso) return 'never';
+  const ts = Date.parse(iso);
+  if (Number.isNaN(ts)) return 'unknown';
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function fillMacroEditor(item) {
+  editingMacroId = item.id || '';
+  document.getElementById('macro-name').value = item.name || '';
+  document.getElementById('macro-steps-json').value = JSON.stringify(item.steps || [], null, 2);
+  setText('macro-status', `Editing ${item.name || item.id}. Save to update.`);
+}
+
+async function generateMacroAI() {
+  const prompt = document.getElementById('macro-prompt').value.trim();
+  try {
+    const res = await fetch('/macros/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    const macro = data.macro || {};
+    document.getElementById('macro-name').value = macro.name || 'AI Macro';
+    document.getElementById('macro-steps-json').value = JSON.stringify(macro.steps || [], null, 2);
+    setText('macro-status', 'AI macro generated. Review steps and save.');
+    haptic();
+  } catch {
+    setText('macro-status', 'Could not generate macro right now.');
+  }
+}
+
+async function saveMacroFromEditor() {
+  const name = document.getElementById('macro-name').value.trim();
+  const raw = document.getElementById('macro-steps-json').value.trim();
+  if (!name) {
+    setText('macro-status', 'Macro name is required.');
+    return;
+  }
+  let steps = [];
+  try {
+    steps = JSON.parse(raw || '[]');
+  } catch {
+    setText('macro-status', 'Invalid JSON in steps editor.');
+    return;
+  }
+  try {
+    const payload = { id: editingMacroId, name, steps };
+    const res = await fetch('/macros/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      setText('macro-status', `Save failed: ${data.reason || 'unknown_error'}`);
+      return;
+    }
+    setText('macro-status', `${data.name} saved.`);
+    clearMacroEditor();
+    await loadMacros();
+  } catch {
+    setText('macro-status', 'Failed to save macro.');
+  }
+}
+
+async function deleteMacro(macroId) {
+  try {
+    const res = await fetch(`/macros/custom/${encodeURIComponent(macroId)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) {
+      setText('macro-status', `${macroId} deleted.`);
+      if (editingMacroId === macroId) clearMacroEditor();
+      await loadMacros();
+    } else {
+      setText('macro-status', `Delete failed: ${data.reason || 'not_allowed'}`);
+    }
+  } catch {
+    setText('macro-status', 'Failed to delete macro.');
+  }
+}
+
+function registerCurrentForegroundApp() {
+  send({ type: 'register_foreground_app' });
+  setText('app-launch-status', 'Detecting current foreground app...');
+  haptic();
+}
+
+function prettyAppName(id) {
+  const map = {
+    vscode: 'VS Code',
+    taskmgr: 'Task Manager',
+  };
+  if (map[id]) return map[id];
+  return id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function renderDynamicApps() {
+  const root = document.getElementById('app-launch-grid');
+  root.innerHTML = '';
+  if (!appList.length) {
+    root.innerHTML = '<div class="small">No launchable apps reported by server.</div>';
+    return;
+  }
+  appList.forEach(app => {
+    const btn = document.createElement('div');
+    btn.className = 'pill';
+    btn.textContent = app.name || prettyAppName(app.id || 'app');
+    btn.onclick = () => launchApp(app.id);
+    root.appendChild(btn);
+  });
+}
+
+function renderDynamicMacros() {
+  const root = document.getElementById('macro-grid');
+  root.innerHTML = '';
+  if (!macroList.length) {
+    root.innerHTML = '<div class="small">No macros available.</div>';
+    setText('macro-recommendations', 'Recommendations will appear after you run macros a few times.');
+    return;
+  }
+  const recommended = [...macroList]
+    .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
+    .slice(0, 3)
+    .map(item => item.name || item.id)
+    .join(', ');
+  setText('macro-recommendations', recommended ? `Recommended: ${recommended}` : 'Recommendations will appear after usage.');
+
+  macroList.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'macro-card';
+
+    const title = document.createElement('div');
+    title.className = 'pill secondary';
+    title.textContent = item.name || item.id;
+    title.onclick = () => runMacro(item.id);
+    card.appendChild(title);
+
+    const meta = document.createElement('div');
+    meta.className = 'macro-meta';
+    meta.textContent = `${item.source || 'built_in'} | used ${item.usageCount || 0} | ${prettyTimeAgo(item.lastUsedAt || '')}`;
+    card.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'macro-actions';
+
+    const runBtn = document.createElement('button');
+    runBtn.className = 'chip-btn';
+    runBtn.textContent = 'Run';
+    runBtn.onclick = () => runMacro(item.id);
+    actions.appendChild(runBtn);
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'chip-btn';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = () => fillMacroEditor(item);
+    actions.appendChild(editBtn);
+
+    if ((item.source || '') === 'custom') {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'chip-btn';
+      delBtn.textContent = 'Delete';
+      delBtn.onclick = () => deleteMacro(item.id);
+      actions.appendChild(delBtn);
+    }
+
+    card.appendChild(actions);
+    root.appendChild(card);
+  });
+}
+
+async function loadServerConfig() {
+  try {
+    const res = await fetch('/config');
+    const data = await res.json();
+    authRequired = !!data.authRequired;
+    if (authRequired) showAuthOverlay('PIN required before control commands are allowed.');
+  } catch {
+    authRequired = false;
+  }
+}
+
+async function loadApps() {
+  try {
+    const res = await fetch('/apps');
+    const data = await res.json();
+    const raw = Array.isArray(data.apps) ? data.apps : [];
+    appList = raw.map(item => {
+      if (typeof item === 'string') {
+        return { id: item, name: prettyAppName(item), source: 'built_in' };
+      }
+      return {
+        id: String(item.id || ''),
+        name: String(item.name || prettyAppName(String(item.id || 'app'))),
+        source: String(item.source || 'built_in')
+      };
+    }).filter(item => !!item.id);
+  } catch {
+    appList = [];
+  }
+  renderDynamicApps();
+}
+
+async function loadMacros() {
+  try {
+    const res = await fetch('/macros');
+    const data = await res.json();
+    macroList = Array.isArray(data.macros) ? data.macros : [];
+  } catch {
+    macroList = [];
+  }
+  renderDynamicMacros();
+}
+
+async function loadCurrentDesktopInfo() {
+  try {
+    const res = await fetch('/desktop');
+    const data = await res.json();
+    if (data && data.name && data.ws) {
+      desktopInviteState.current = data;
+      const inviteInput = document.getElementById('invite-code');
+      if (inviteInput && !inviteInput.value) inviteInput.value = data.invite || '';
+      setText('invite-status', `Current desktop: ${data.name} (${data.ip || 'local'})`);
+    }
+  } catch {
+    desktopInviteState.current = null;
+  }
+}
+
+function getProfileIdForDesktop(desktop) {
+  return desktop.id || desktop.ws || desktop.ip || `p-${Date.now()}`;
+}
+
+function addOrUpdateProfileFromDesktop(desktop) {
+  if (!desktop || !desktop.ws) return null;
+  const profileId = getProfileIdForDesktop(desktop);
+  const existing = profileState.list.find(p => p.id === profileId || p.url === desktop.ws || p.desktopId === desktop.id);
+  const item = existing || { id: profileId };
+  item.name = desktop.name || desktop.ip || 'Desktop';
+  item.url = desktop.ws;
+  item.desktopId = desktop.id || '';
+  item.invite = desktop.invite || item.invite || '';
+  if (!existing) profileState.list.push(item);
+  saveProfiles();
+  renderProfiles();
+  return item;
+}
+
+function fillInviteMessage(text) {
+  const input = document.getElementById('invite-message');
+  if (!input) return;
+  input.value = text || 'Quick connect request';
+  setText('nearby-status', 'Invite message updated.');
+}
+
+function addManualDesktop() {
+  const input = document.getElementById('manual-desktop-ip');
+  const value = (input.value || '').trim();
+  if (!value) {
+    setText('nearby-status', 'Enter an IP address first.');
+    return;
+  }
+  const cleaned = value.replace(/^https?:\/\//, '').replace(/:\d+.*$/, '');
+  const desktop = {
+    id: `manual-${cleaned}`,
+    name: cleaned,
+    ip: cleaned,
+    ws: `ws://${cleaned}:8000/ws`,
+    inviteStatus: { status: 'idle' }
+  };
+  addOrUpdateProfileFromDesktop(desktop);
+  const found = nearbyDesktopState.items.find(item => item.ip === cleaned || item.ws.includes(cleaned));
+  if (!found) nearbyDesktopState.items.unshift(desktop);
+  renderNearbyDesktops();
+  input.value = '';
+  setText('nearby-status', `${cleaned} added. Tap Invite or Use.`);
+}
+
+function getInviteStatusLabel(desktop) {
+  const status = desktop?.inviteStatus?.status || desktop?.status || 'idle';
+  if (status === 'pending') return 'Invite pending';
+  if (status === 'accept') return 'Accepted';
+  if (status === 'reject') return 'Rejected';
+  if (status === 'idle') return 'Ready';
+  return status;
+}
+
+async function sendInviteToDesktop(desktop) {
+  if (!desktop || !desktop.ip) {
+    setText('nearby-status', 'No target desktop selected.');
+    return;
+  }
+  const messageInput = document.getElementById('invite-message');
+  const message = (messageInput && messageInput.value.trim()) ? messageInput.value.trim() : `Invite to connect to ${desktop.name || 'Desktop'}`;
+  try {
+    const res = await fetch('/invite/proxy/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetIp: desktop.ip,
+        message,
+        senderName: desktopInviteState.current?.name || 'PhoneDesk',
+        senderIp: desktopInviteState.current?.ip || '',
+        senderWs: desktopInviteState.current?.ws || ''
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setText('nearby-status', `Invite sent to ${desktop.name || desktop.ip}.`);
+      await scanNearbyDesktops();
+    } else {
+      setText('nearby-status', `Could not send invite: ${data.reason || 'failed'}`);
+    }
+  } catch {
+    setText('nearby-status', 'Could not send invite.');
+  }
+}
+
+function renderNearbyDesktops() {
+  const root = document.getElementById('nearby-list');
+  root.innerHTML = '';
+  if (!nearbyDesktopState.items.length) {
+    root.innerHTML = '<div class="small">No nearby desktops found yet.</div>';
+    return;
+  }
+
+  nearbyDesktopState.items.forEach(desktop => {
+    const row = document.createElement('div');
+    row.className = 'nearby-item';
+
+    const info = document.createElement('div');
+    const inviteLabel = getInviteStatusLabel(desktop);
+    info.innerHTML = `<div>${escapeHtml(desktop.name || 'Desktop')}</div><div class="small">${escapeHtml(desktop.ip || desktop.ws || '')}</div><div class="small">Status: ${escapeHtml(inviteLabel)}</div>`;
+
+    const useBtn = document.createElement('button');
+    useBtn.className = 'chip-btn';
+    useBtn.textContent = 'Use';
+    useBtn.onclick = () => {
+      const profile = addOrUpdateProfileFromDesktop(desktop);
+      if (profile) {
+        profileState.activeId = profile.id;
+        saveProfiles();
+        renderProfiles();
+        applyActiveProfile(true);
+        setText('nearby-status', `Switched to ${desktop.name || 'Desktop'}.`);
+      }
+    };
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'chip-btn';
+    addBtn.textContent = 'Register';
+    addBtn.onclick = () => {
+      const profile = addOrUpdateProfileFromDesktop(desktop);
+      if (profile) {
+        setText('nearby-status', `${desktop.name || 'Desktop'} added to profiles.`);
+      }
+    };
+
+    const inviteBtn = document.createElement('button');
+    inviteBtn.className = 'chip-btn';
+    inviteBtn.textContent = 'Invite';
+    inviteBtn.onclick = () => sendInviteToDesktop(desktop);
+
+    row.appendChild(info);
+    row.appendChild(useBtn);
+    row.appendChild(addBtn);
+    row.appendChild(inviteBtn);
+    root.appendChild(row);
+  });
+}
+
+async function scanNearbyDesktops() {
+  setText('nearby-status', 'Scanning local Wi-Fi for desktops...');
+  try {
+    const res = await fetch('/desktops/nearby');
+    const data = await res.json();
+    const items = Array.isArray(data.desktops) ? data.desktops : [];
+    nearbyDesktopState.items = items.filter(item => item && item.ws);
+    renderNearbyDesktops();
+    if (data.current && data.current.name) {
+      desktopInviteState.current = data.current;
+      const inviteInput = document.getElementById('invite-code');
+      if (inviteInput && !inviteInput.value) inviteInput.value = data.current.invite || '';
+    }
+    setText('nearby-status', nearbyDesktopState.items.length ? `Found ${nearbyDesktopState.items.length} desktop(s).` : 'No desktops found on this Wi-Fi.');
+  } catch {
+    nearbyDesktopState.items = [];
+    renderNearbyDesktops();
+    setText('nearby-status', 'Could not scan for nearby desktops.');
+  }
+}
+
+function handleMoveFlush() {
+  pointer.raf = 0;
+  if (pointer.accDx === 0 && pointer.accDy === 0) return;
+  send({ type: 'move', dx: pointer.accDx, dy: pointer.accDy, speed: settings.speed, accel: settings.accel });
+  pointer.accDx = 0;
+  pointer.accDy = 0;
+}
+
+function queueMove(dx, dy) {
+  pointer.accDx += dx;
+  pointer.accDy += dy;
+  if (!pointer.raf) pointer.raf = requestAnimationFrame(handleMoveFlush);
+}
+
+function showTouchDot(x, y) {
+  const tp = document.getElementById('trackpad');
+  let dot = tp.querySelector('.touch-dot');
+  if (!dot) {
+    dot = document.createElement('div');
+    dot.className = 'touch-dot';
+    tp.appendChild(dot);
+  }
+  const r = tp.getBoundingClientRect();
+  dot.style.left = `${x - r.left}px`;
+  dot.style.top = `${y - r.top}px`;
+  dot.style.opacity = '1';
+}
+
+function hideTouchDot() {
+  const dot = document.querySelector('.touch-dot');
+  if (dot) dot.style.opacity = '0';
+}
+
+function initTrackpad() {
+  const tp = document.getElementById('trackpad');
+
+  tp.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const n = e.touches.length;
+
+    if (n === 1) {
+      const t = e.touches[0];
+      pointer.active = true;
+      pointer.id = t.identifier;
+      pointer.startX = pointer.lastX = t.clientX;
+      pointer.startY = pointer.lastY = t.clientY;
+      pointer.startAt = Date.now();
+      pointer.moved = false;
+      pointer.movePx = 0;
+    }
+
+    if (n === 2) {
+      scrollState.t0 = { id: e.touches[0].identifier, x: e.touches[0].clientX, y: e.touches[0].clientY };
+      scrollState.t1 = { id: e.touches[1].identifier, x: e.touches[1].clientX, y: e.touches[1].clientY };
+      tp.classList.add('scrolling');
+    }
+
+    if (n >= 3 && !dragMode) {
+      dragMode = true;
+      send({ type: 'drag_start' });
+      haptic(24);
+    }
+  }, { passive: false });
+
+  tp.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const n = e.touches.length;
+
+    if (dragMode && n === 1) {
+      const t = e.touches[0];
+      const dx = t.clientX - pointer.lastX;
+      const dy = t.clientY - pointer.lastY;
+      pointer.lastX = t.clientX;
+      pointer.lastY = t.clientY;
+      queueMove(dx, dy);
+      showTouchDot(t.clientX, t.clientY);
+      return;
+    }
+
+    if (n === 1 && pointer.active) {
+      const t = e.touches[0];
+      const dx = t.clientX - pointer.lastX;
+      const dy = t.clientY - pointer.lastY;
+      pointer.lastX = t.clientX;
+      pointer.lastY = t.clientY;
+      pointer.movePx += Math.abs(dx) + Math.abs(dy);
+      pointer.moved = pointer.movePx > 7;
+      queueMove(dx, dy);
+      showTouchDot(t.clientX, t.clientY);
+      return;
+    }
+
+    if (n === 2 && scrollState.t0 && scrollState.t1) {
+      const t0 = e.touches[0];
+      const t1 = e.touches[1];
+      const dy = ((t0.clientY - scrollState.t0.y) + (t1.clientY - scrollState.t1.y)) / 2;
+      const dx = ((t0.clientX - scrollState.t0.x) + (t1.clientX - scrollState.t1.x)) / 2;
+      send({ type: 'scroll', dy, dx, scrollSpeed: settings.scrollSpeed });
+      scrollState.t0 = { id: t0.identifier, x: t0.clientX, y: t0.clientY };
+      scrollState.t1 = { id: t1.identifier, x: t1.clientX, y: t1.clientY };
+      tp.classList.add('scrolling');
+    }
+  }, { passive: false });
+
+  tp.addEventListener('touchend', e => {
+    e.preventDefault();
+
+    if (e.touches.length < 2) {
+      tp.classList.remove('scrolling');
+      scrollState.t0 = null;
+      scrollState.t1 = null;
+    }
+
+    if (dragMode && e.touches.length === 0) {
+      dragMode = false;
+      send({ type: 'drag_end' });
+      hideTouchDot();
+      return;
+    }
+
+    if (pointer.active && e.touches.length === 0) {
+      const elapsed = Date.now() - pointer.startAt;
+      const shouldClick = settings.tapClick && !pointer.moved && pointer.movePx < 8 && elapsed < 260;
+      if (shouldClick) {
+        send({ type: 'left_click' });
+        haptic();
+      }
+      pointer.active = false;
+      hideTouchDot();
+    }
+  }, { passive: false });
+}
+
+async function showQR() {
+  const overlay = document.getElementById('qr-overlay');
+  overlay.classList.add('show');
+  try {
+    const res = await fetch('/qr');
+    const data = await res.json();
+    if (data && data.qr) {
+      document.getElementById('qr-img').src = `data:image/png;base64,${data.qr}`;
+    }
+    setText('qr-url', data.url || location.href);
+    setText('qr-help', 'Use this QR to open the same controller URL on another phone quickly.');
+  } catch {
+    document.getElementById('qr-img').src = '';
+    setText('qr-url', location.href);
+    setText('qr-help', 'QR service unavailable. Open this URL manually on another device on same network.');
+  }
+}
+
+function closeQR() {
+  document.getElementById('qr-overlay').classList.remove('show');
+}
+
+function toggleDeck() {
+  const deck = document.getElementById('quick-deck');
+  const btn = document.getElementById('deck-toggle');
+  const collapsed = deck.classList.toggle('collapsed');
+  btn.textContent = collapsed ? 'Show' : 'Hide';
+}
+
+function sendDeckText() {
+  const input = document.getElementById('deck-text');
+  const value = input.value;
+  if (!value) return;
+  send({ type: 'type', text: value });
+  input.value = '';
+  haptic();
+}
+
+function loadProfiles() {
+  try {
+    const raw = localStorage.getItem('trackpadProfiles');
+    if (raw) profileState.list = JSON.parse(raw);
+    const active = localStorage.getItem('trackpadActiveProfile');
+    if (active) profileState.activeId = active;
+  } catch {}
+  renderProfiles();
+  applyActiveProfile(false);
+}
+
+function saveProfiles() {
+  localStorage.setItem('trackpadProfiles', JSON.stringify(profileState.list));
+  localStorage.setItem('trackpadActiveProfile', profileState.activeId);
+}
+
+function addProfile() {
+  const nameInput = document.getElementById('profile-name');
+  const urlInput = document.getElementById('profile-url');
+  const name = nameInput.value.trim();
+  const url = urlInput.value.trim();
+  if (!name || !url.startsWith('ws://') && !url.startsWith('wss://')) return;
+  const id = `p-${Date.now()}`;
+  profileState.list.push({ id, name, url });
+  profileState.activeId = id;
+  saveProfiles();
+  renderProfiles();
+  applyActiveProfile(true);
+  nameInput.value = '';
+  urlInput.value = '';
+}
+
+async function registerCurrentDesktop() {
+  try {
+    const res = await fetch('/desktop');
+    const data = await res.json();
+    if (!data || !data.ws) {
+      setText('invite-status', 'Could not read the current desktop info.');
+      return;
+    }
+    const existing = profileState.list.find(p => p.url === data.ws || p.id === data.id);
+    const item = existing || { id: data.id || `p-${Date.now()}` };
+    item.name = data.name || 'Desktop';
+    item.url = data.ws;
+    item.desktopId = data.id || '';
+    item.invite = data.invite || '';
+    if (!existing) profileState.list.push(item);
+    profileState.activeId = item.id;
+    saveProfiles();
+    renderProfiles();
+    applyActiveProfile(true);
+    setText('invite-status', `Registered ${item.name}.`);
+    desktopInviteState.current = data;
+    const inviteInput = document.getElementById('invite-code');
+    if (inviteInput) inviteInput.value = data.invite || '';
+  } catch {
+    setText('invite-status', 'Could not register this desktop.');
+  }
+}
+
+async function refreshDesktopInvite() {
+  try {
+    const res = await fetch('/desktop');
+    const data = await res.json();
+    if (data && data.invite) {
+      desktopInviteState.current = data;
+      const inviteInput = document.getElementById('invite-code');
+      if (inviteInput) inviteInput.value = data.invite;
+      setText('invite-status', `Invite refreshed for ${data.name || 'this desktop'}.`);
+    } else {
+      setText('invite-status', 'Invite could not be generated.');
+    }
+  } catch {
+    setText('invite-status', 'Could not refresh invite.');
+  }
+}
+
+async function importDesktopInvite() {
+  const input = document.getElementById('invite-code');
+  const invite = input.value.trim();
+  if (!invite) {
+    setText('invite-status', 'Paste an invite code first.');
+    return;
+  }
+  try {
+    const res = await fetch('/desktop/invite/decode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invite })
+    });
+    const data = await res.json();
+    if (!data.ok || !data.desktop || !data.desktop.ws) {
+      setText('invite-status', 'That invite code is invalid.');
+      return;
+    }
+    const desktop = data.desktop;
+    const existing = profileState.list.find(p => p.url === desktop.ws || p.desktopId === desktop.id);
+    const item = existing || { id: desktop.id || `p-${Date.now()}` };
+    item.name = desktop.name || 'Desktop';
+    item.url = desktop.ws;
+    item.desktopId = desktop.id || '';
+    item.invite = invite;
+    if (!existing) profileState.list.push(item);
+    profileState.activeId = item.id;
+    saveProfiles();
+    renderProfiles();
+    applyActiveProfile(true);
+    setText('invite-status', `Imported ${item.name}.`);
+  } catch {
+    setText('invite-status', 'Could not import invite.');
+  }
+}
+
+function removeProfile(id) {
+  profileState.list = profileState.list.filter(p => p.id !== id);
+  if (profileState.activeId === id) profileState.activeId = 'auto';
+  saveProfiles();
+  renderProfiles();
+  applyActiveProfile(true);
+}
+
+function selectProfile(id) {
+  profileState.activeId = id;
+  saveProfiles();
+  renderProfiles();
+  applyActiveProfile(true);
+}
+
+function getActiveProfileName() {
+  if (profileState.activeId === 'auto') return 'Auto';
+  const p = profileState.list.find(x => x.id === profileState.activeId);
+  return p ? p.name : 'Auto';
+}
+
+function applyActiveProfile(reconnectNow) {
+  if (profileState.activeId === 'auto') currentWsUrl = getDefaultWsUrl();
+  else {
+    const p = profileState.list.find(x => x.id === profileState.activeId);
+    currentWsUrl = p ? p.url : getDefaultWsUrl();
+  }
+
+  setText('desktop-chip', profileState.activeId === 'auto' ? 'Desktop: Auto' : `Desktop: ${getActiveProfileName()}`);
+
+  if (reconnectNow) {
+    if (ws) {
+      try { ws.close(); } catch {}
+    } else {
+      connect();
+    }
+  }
+}
+
+function renderProfiles() {
+  const root = document.getElementById('profile-list');
+  root.innerHTML = '';
+
+  const auto = document.createElement('div');
+  auto.className = `profile-item ${profileState.activeId === 'auto' ? 'active' : ''}`;
+  auto.innerHTML = `<div><div>Auto (this host)</div><div class="small">${getDefaultWsUrl()}</div></div>`;
+  const autoUse = document.createElement('button');
+  autoUse.className = 'chip-btn';
+  autoUse.textContent = 'Use';
+  autoUse.onclick = () => selectProfile('auto');
+  const autoBlank = document.createElement('div');
+  autoBlank.className = 'small';
+  autoBlank.textContent = '';
+  auto.appendChild(autoUse);
+  auto.appendChild(autoBlank);
+  root.appendChild(auto);
+
+  profileState.list.forEach(p => {
+    const item = document.createElement('div');
+    item.className = `profile-item ${profileState.activeId === p.id ? 'active' : ''}`;
+    item.innerHTML = `<div><div>${escapeHtml(p.name)}</div><div class="small">${escapeHtml(p.url)}</div></div>`;
+
+    const use = document.createElement('button');
+    use.className = 'chip-btn';
+    use.textContent = 'Use';
+    use.onclick = () => selectProfile(p.id);
+
+    const del = document.createElement('button');
+    del.className = 'chip-btn';
+    del.textContent = 'Delete';
+    del.onclick = () => removeProfile(p.id);
+
+    item.appendChild(use);
+    item.appendChild(del);
+    root.appendChild(item);
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\'' : '&#39;', '"': '&quot;' }[c]));
+}
+
+async function boot() {
+  loadProfiles();
+  initTrackpad();
+  await loadServerConfig();
+  await loadCurrentDesktopInfo();
+  await loadApps();
+  await loadMacros();
+  await loadShareRecent();
+  await scanNearbyDesktops();
+  hideElement('share-link-result');
+  setText('share-link-status', 'Ready to generate a share link.');
+  connect();
+}
+
+// ===== Share Link Functions =====
+
+async function generateShareLink() {
+  const friendName = document.getElementById('shareLinkFriendName').value.trim();
+  
+  if (!friendName) {
+    setText('share-link-status', '❌ Please enter a friend name.');
+    return;
+  }
+  
+  setText('share-link-status', '⏳ Generating link...');
+  
+  try {
+    const response = await fetch(`${RELAY_URL}/api/generate-link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ friendName })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    currentShareLinkId = data.shareLinkId;
+    currentShareDeviceId = data.deviceId;
+    
+    const shareUrl = data.shareUrl;
+    setText('share-link-text', shareUrl);
+    showElement('share-link-result');
+    setText('share-link-status', `✅ Link generated for "${friendName}". Valid for 24 hours.`);
+    
+  } catch (err) {
+    console.error('Share link generation error:', err);
+    setText('share-link-status', `❌ Error: ${err.message}`);
+  }
+}
+
+function copyShareLink() {
+  const linkText = document.getElementById('share-link-text').textContent;
+  if (!linkText) return;
+  
+  navigator.clipboard.writeText(linkText).then(() => {
+    setText('share-link-status', '✅ Link copied to clipboard!');
+  }).catch(() => {
+    setText('share-link-status', '❌ Could not copy link.');
+  });
+}
+
+function shareViaWhatsApp() {
+  const linkText = document.getElementById('share-link-text').textContent;
+  if (!linkText) return;
+  
+  const message = encodeURIComponent(`I'm sharing control of my laptop with Trackpad. Click this link to get started: ${linkText}`);
+  window.open(`https://wa.me/?text=${message}`, '_blank');
+}
+
+function showElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = '';
+}
+
+function hideElement(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+boot();
+</script>
+</body>
+</html>

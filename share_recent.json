@@ -1,0 +1,50 @@
+[
+  {
+    "id": "share-1776110071554",
+    "kind": "file",
+    "name": "magicpin_invoice.pdf",
+    "target": "shared_files",
+    "path": "shared_files\\magicpin_invoice.pdf",
+    "opened": true,
+    "createdAt": "2026-04-13T19:54:31.554228+00:00"
+  },
+  {
+    "id": "share-1776107982176",
+    "kind": "file",
+    "name": "RapidCRUD_AI_-_Enhanced_1.pdf",
+    "target": "C:\\Users\\afaqp\\Downloads",
+    "path": "C:\\Users\\afaqp\\Downloads\\RapidCRUD_AI_-_Enhanced_1.pdf",
+    "opened": true,
+    "createdAt": "2026-04-13T19:19:42.176540+00:00"
+  },
+  {
+    "id": "text-1776106979966",
+    "kind": "text",
+    "name": "Clipboard text",
+    "preview": "Hi how are you",
+    "createdAt": "2026-04-13T19:02:59.966231+00:00",
+    "copied": true
+  },
+  {
+    "id": "share-1776106922594",
+    "kind": "file",
+    "name": "VID-20260411-WA0010.mp4",
+    "target": "shared_files",
+    "path": "shared_files\\VID-20260411-WA0010.mp4",
+    "opened": true,
+    "createdAt": "2026-04-13T19:02:02.594784+00:00",
+    "mime": "video/mp4",
+    "clipboardCopied": false
+  },
+  {
+    "id": "share-1776106894535",
+    "kind": "file",
+    "name": "VID-20260413-WA0000.mp4",
+    "target": "shared_files",
+    "path": "shared_files\\VID-20260413-WA0000.mp4",
+    "opened": true,
+    "createdAt": "2026-04-13T19:01:34.535556+00:00",
+    "mime": "video/mp4",
+    "clipboardCopied": false
+  }
+]
