@@ -1,6 +1,5 @@
 {
   "buildCommand": "npm install",
-  "envPrefix": "TRACKPAD_",
   "functions": {
     "api/**/*.js": {
       "runtime": "nodejs20.x",
